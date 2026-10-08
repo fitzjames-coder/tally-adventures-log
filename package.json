@@ -1,0 +1,18 @@
+{
+  "name": "tally-adventures-log",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "TALLY ADVENTURES Log - a cloud PWA flight journal for Microsoft Flight Simulator trips.",
+  "scripts": {
+    "setup": "node scripts/setup-assets.mjs",
+    "predev": "node scripts/setup-assets.mjs",
+    "dev": "wrangler dev",
+    "test": "node --test",
+    "migrate:local": "wrangler d1 migrations apply tally-adventures-log-db --local",
+    "migrate:remote": "wrangler d1 migrations apply tally-adventures-log-db --remote"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
