@@ -1,0 +1,7 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="TALLY ADVENTURES Log">
+  <rect x="16" y="16" width="480" height="480" rx="120" fill="#163973"/>
+  <path fill="#F5E8D8" d="M416 96 L96 240 L224 272 Z"/>
+  <path fill="#F5E8D8" d="M416 96 L224 272 L272 400 Z"/>
+  <path fill="#163973" opacity="0.28" d="M416 96 L224 272 L248 328 Z"/>
+  <rect x="128" y="432" width="256" height="30" rx="15" fill="#F09A1F"/>
+</svg>
