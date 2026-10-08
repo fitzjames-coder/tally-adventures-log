@@ -572,7 +572,7 @@ button { font-family: inherit; }
 .pilot-row { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; }
 .pilot-row .pr-ic { width: 18px; height: 18px; flex: none; margin-top: 1px; }
 .pilot-row.positive .pr-ic { color: var(--green); }
-.pilot-row.practice .pr-ic { color: var(--text-2); } /* slate #526581: amber icons never sit on cream */
+.pilot-row.practice .pr-ic { color: var(--amber); }
 
 /* Sidebar chapter list */
 .chap-nav { padding: 8px 10px 20px; }
