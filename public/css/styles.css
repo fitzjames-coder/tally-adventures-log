@@ -62,13 +62,17 @@ button { font-family: inherit; }
 .sidebar {
   background: var(--navy);
   color: var(--cream);
-  display: flex;
-  flex-direction: column;
+  border-right: 1px solid var(--navy-line);
+  /* Grid stretches this column to the full page height, so the navy runs the
+     whole length at any scroll position. The inner wrapper stays pinned. */
+}
+.sidebar-inner {
   position: sticky;
   top: 0;
-  height: 100vh;
+  max-height: 100vh;
   overflow-y: auto;
-  border-right: 1px solid var(--navy-line);
+  display: flex;
+  flex-direction: column;
 }
 
 .main { min-width: 0; }
@@ -392,7 +396,7 @@ button { font-family: inherit; }
 
 .stepper { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
 .step { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 6px 13px; border-radius: 999px; border: 1px solid var(--line); color: var(--navy); background: transparent; cursor: pointer; }
-.step .n { color: var(--amber); }
+.step .n { color: var(--navy); }
 .step.active { background: var(--navy); color: var(--cream); border-color: var(--navy); }
 .step.active .n { color: var(--cream); }
 .step.ghost { opacity: 0.55; }
@@ -568,7 +572,7 @@ button { font-family: inherit; }
 .pilot-row { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; }
 .pilot-row .pr-ic { width: 18px; height: 18px; flex: none; margin-top: 1px; }
 .pilot-row.positive .pr-ic { color: var(--green); }
-.pilot-row.practice .pr-ic { color: var(--amber); }
+.pilot-row.practice .pr-ic { color: var(--text-2); } /* slate #526581: amber icons never sit on cream */
 
 /* Sidebar chapter list */
 .chap-nav { padding: 8px 10px 20px; }
@@ -590,7 +594,11 @@ button { font-family: inherit; }
 @media (max-width: 680px) {
   .chapter-grid { grid-template-columns: 1fr; }
   .pcards { grid-template-columns: 1fr; }
-  .phase-cols { grid-template-columns: 1fr; }
+  /* Flight-moment phase tiles: two per row at a compact thumbnail height. */
+  .phase-cols { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .phase-col .ghost-ph, .phase-col .hero-ph { aspect-ratio: auto; height: 92px; }
+  .phase-col .ghost-ph .gcap { font-size: 11px; }
+  .phase-col .phase-label, .phase-col .ghost-ph .glabel { font-size: 9px; padding: 2px 6px; }
   .para-row { grid-template-columns: 1fr; }
   .para-right { text-align: left; min-width: 0; }
   .leg-chips { justify-content: flex-start; }

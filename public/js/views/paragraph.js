@@ -10,6 +10,7 @@ import {
   legsForParagraph, getLeg, getPhoto, momentsForLeg, documentsForLeg, isFlown,
 } from '../state.js';
 import { formatDuration } from '../lib/statistics.js';
+import { alongTheWayEmpty } from '../lib/moments.js';
 import { lazyImg } from '../lazy.js';
 import { mediaUrl, photoTile, openPhotoDialog } from '../ui/photo.js';
 import { openLegForm, openMomentForm } from '../ui/forms.js';
@@ -252,11 +253,8 @@ function routeTimeline(app, paragraph, legs, leg) {
       }
       right.append(ul);
     } else {
-      right.append(ghostBox({
-        title: 'Not flown yet.',
-        text: 'The timeline fills in after the flight. The planned flight plan is below.',
-        visual: ghostTimeline(),
-      }));
+      const copy = alongTheWayEmpty(leg, timed.length > 0);
+      right.append(ghostBox({ title: copy.title, text: copy.text, visual: ghostTimeline() }));
     }
   }
   renderRight();

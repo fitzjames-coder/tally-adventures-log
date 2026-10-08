@@ -18,8 +18,12 @@ const NAV = [
 
 export function renderSidebar(app) {
   const side = el('aside', { class: 'sidebar', id: 'sidebar' });
+  // Inner wrapper holds the content and stays pinned while the navy column
+  // itself stretches to the full page height (see .sidebar / .sidebar-inner).
+  const inner = el('div', { class: 'sidebar-inner' });
+  side.append(inner);
 
-  side.append(el('div', { class: 'brand' },
+  inner.append(el('div', { class: 'brand' },
     el('img', { class: 'brand-wordmark', src: '/brand/wordmark-on-navy.png', alt: 'TALLY JOURNEY — Every flight has a story' })));
 
   const nav = el('nav', { class: 'nav', 'aria-label': 'Primary' });
@@ -30,7 +34,7 @@ export function renderSidebar(app) {
     link.addEventListener('click', () => closeDrawer());
     nav.append(link);
   }
-  side.append(nav);
+  inner.append(nav);
 
   // Chapters in flying order
   const chapters = chaptersOrdered();
@@ -55,7 +59,7 @@ export function renderSidebar(app) {
       chapWrap.append(item);
     });
   }
-  side.append(chapWrap);
+  inner.append(chapWrap);
   return side;
 }
 
