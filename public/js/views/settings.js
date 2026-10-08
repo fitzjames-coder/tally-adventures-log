@@ -1,15 +1,12 @@
-// Settings: app name, data export, and a link to Trash.
+// Settings: app name, SimBrief account, data export (CSV + JSON), Trash link.
 
 import { el } from '../dom.js';
-import { icon } from '../icons.js';
-import { currentAdventure } from '../state.js';
+import { store } from '../state.js';
 import { api } from '../api.js';
-import { openAdventureForm } from '../ui/forms.js';
 import { toast } from '../ui/dialog.js';
-import { pageHead, sectionHead, editButton, primaryButton, ghostButton } from './common.js';
+import { pageHead, sectionHead, primaryButton, ghostButton } from './common.js';
 
 export function renderSettings(app) {
-  const adv = currentAdventure();
   const wrap = el('div', {});
   wrap.append(pageHead('Settings'));
 
@@ -20,24 +17,34 @@ export function renderSettings(app) {
   appCard.append(el('p', { class: 'muted', style: { marginTop: '8px' }, text: 'A private flight journal. No sign-in, by design.' }));
   wrap.append(appCard);
 
-  // Current adventure
-  const advCard = el('div', { class: 'card section' });
-  advCard.append(sectionHead('Current adventure', adv ? [editButton(() => openAdventureForm({ adventure: adv, onSaved: () => app.reloadAll() }))] : []));
-  if (adv) {
-    advCard.append(el('div', { style: { fontWeight: '700', color: 'var(--navy)' }, text: adv.title }));
-    if (adv.subtitle) advCard.append(el('div', { class: 'muted', text: adv.subtitle }));
-  } else {
-    advCard.append(el('p', { class: 'muted', text: 'No adventure yet. Create one from the sidebar.' }));
-  }
-  wrap.append(advCard);
+  // SimBrief
+  const sbCard = el('div', { class: 'card section' });
+  sbCard.append(sectionHead('SimBrief'));
+  sbCard.append(el('p', { class: 'muted', text: 'Save your SimBrief username or Pilot ID so you can import the latest OFP into a leg’s planned flight plan. No password is stored.' }));
+  const input = el('input', { type: 'text', value: store.settings.simbrief_username || '', placeholder: 'SimBrief username or Pilot ID', style: { maxWidth: '320px' } });
+  const field = el('div', { class: 'field', style: { marginTop: '10px' } }, el('label', { for: 'sbuser', text: 'Username / Pilot ID' }), input);
+  input.id = 'sbuser';
+  const save = primaryButton(' Save', 'check', async () => {
+    save.disabled = true;
+    try {
+      const next = await api.settings.save({ simbrief_username: input.value.trim() });
+      store.settings = next;
+      toast('SimBrief account saved');
+    } catch (err) {
+      toast(err?.message || 'Could not save', { error: true });
+    } finally { save.disabled = false; }
+  });
+  sbCard.append(field, el('div', { class: 'chiprow', style: { marginTop: '10px' } }, save));
+  wrap.append(sbCard);
 
   // Data
   const dataCard = el('div', { class: 'card section' });
   dataCard.append(sectionHead('Your data'));
-  dataCard.append(el('p', { class: 'muted', text: 'Export every record — adventures, flights, destinations, moments and photo metadata — as one JSON file.' }));
-  const exportBtn = primaryButton(' Export all data', 'download', () => doExport(exportBtn));
+  dataCard.append(el('p', { class: 'muted', text: 'Export everything — chapters, paragraphs, legs (flown and planned), moments, photos and documents. CSV gives one file per table in a zip; JSON gives a single document. Trashed rows are included.' }));
+  const csvBtn = primaryButton(' Download CSV', 'download', () => downloadUrl('/api/export/csv', csvBtn));
+  const jsonBtn = ghostButton(' Export JSON', 'download', () => doJsonExport(jsonBtn));
   const trashLink = ghostButton(' Open Trash', 'trash', () => app.navigate('/trash'));
-  dataCard.append(el('div', { class: 'chiprow', style: { marginTop: '12px' } }, exportBtn, trashLink));
+  dataCard.append(el('div', { class: 'chiprow', style: { marginTop: '12px' } }, csvBtn, jsonBtn, trashLink));
   wrap.append(dataCard);
 
   // Storage
@@ -55,28 +62,28 @@ export function renderSettings(app) {
     status.textContent = 'This browser does not report storage persistence.';
   }
   wrap.append(storeCard);
-
   return wrap;
 }
 
-async function doExport(btn) {
+function downloadUrl(url) {
+  const a = el('a', { href: url });
+  document.body.append(a);
+  a.click();
+  a.remove();
+  toast('Preparing download…');
+}
+
+async function doJsonExport(btn) {
   btn.disabled = true;
-  const original = btn.textContent;
-  btn.textContent = 'Preparing…';
   try {
     const data = await api.exportAll();
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    const a = el('a', { href: url, download: 'tally-adventures-log-export.json' });
-    document.body.append(a);
-    a.click();
-    a.remove();
+    const a = el('a', { href: url, download: 'tally-journey-export.json' });
+    document.body.append(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 4000);
-    toast('Export downloaded');
+    toast('JSON exported');
   } catch (err) {
     toast(err?.message || 'Export failed', { error: true });
-  } finally {
-    btn.disabled = false;
-    btn.textContent = original;
-  }
+  } finally { btn.disabled = false; }
 }

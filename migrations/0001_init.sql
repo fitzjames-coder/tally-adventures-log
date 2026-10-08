@@ -1,4 +1,4 @@
--- TALLY ADVENTURES Log - initial schema (milestone 1)
+-- TALLY JOURNEY - initial schema (milestone 1)
 -- Every row carries id, created_at, updated_at, deleted_at.
 -- Soft delete: deleted_at IS NULL means live; a timestamp means trashed.
 -- The app ships empty: no seed rows of any kind.

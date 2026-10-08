@@ -1,121 +1,66 @@
-// The fixed navy sidebar (desktop) / slide-in drawer (phone): brand, current
-// adventure, primary nav, and the list of flight legs.
+// The fixed navy sidebar (desktop) / slide-in drawer (phone): brand, primary
+// nav, and the book's chapters in flying order.
 
 import { el } from '../dom.js';
 import { icon } from '../icons.js';
-import { store, currentAdventure, setCurrent, loadCurrent } from '../state.js';
-import { openDialog } from './dialog.js';
-import { openAdventureForm, openLegForm } from './forms.js';
+import { chaptersOrdered } from '../state.js';
+import { openChapterForm } from './forms.js';
+import { navigate } from '../router.js';
 
 const NAV = [
-  { name: 'journal', label: 'Journal', icon: 'journal' },
-  { name: 'map', label: 'Map', icon: 'map' },
-  { name: 'photos', label: 'Photos', icon: 'photos' },
-  { name: 'statistics', label: 'Statistics', icon: 'statistics' },
-  { name: 'settings', label: 'Settings', icon: 'settings' },
-  { name: 'trash', label: 'Trash', icon: 'trash' },
+  { name: 'book', label: 'Journal', icon: 'journal', match: ['book', 'chapter', 'paragraph'] },
+  { name: 'map', label: 'Map', icon: 'map', match: ['map'] },
+  { name: 'photos', label: 'Photos', icon: 'photos', match: ['photos'] },
+  { name: 'statistics', label: 'Statistics', icon: 'statistics', match: ['statistics'] },
+  { name: 'settings', label: 'Settings', icon: 'settings', match: ['settings'] },
+  { name: 'trash', label: 'Trash', icon: 'trash', match: ['trash'] },
 ];
 
 export function renderSidebar(app) {
-  const adv = currentAdventure();
   const side = el('aside', { class: 'sidebar', id: 'sidebar' });
+  // Inner wrapper holds the content and stays pinned while the navy column
+  // itself stretches to the full page height (see .sidebar / .sidebar-inner).
+  const inner = el('div', { class: 'sidebar-inner' });
+  side.append(inner);
 
-  // Brand
-  const brand = el('div', { class: 'brand' },
-    el('img', { class: 'brand-wordmark', src: '/brand/wordmark-on-navy.png', alt: 'TALLY JOURNEY — Every flight has a story' }),
-  );
-  side.append(brand);
+  inner.append(el('div', { class: 'brand' },
+    el('img', { class: 'brand-wordmark', src: '/brand/wordmark-on-navy.png', alt: 'TALLY JOURNEY — Every flight has a story' })));
 
-  // Current adventure switch
-  const switchBtn = el('button', { class: 'adv-switch', type: 'button' },
-    el('div', { class: 'eyebrow', text: adv ? 'Current adventure' : 'No adventure yet' }),
-    el('div', { class: 'title', text: adv ? adv.title : 'Create your first one' }),
-  );
-  switchBtn.addEventListener('click', () => openAdventurePicker(app));
-  side.append(switchBtn);
-
-  // Primary nav
   const nav = el('nav', { class: 'nav', 'aria-label': 'Primary' });
   for (const item of NAV) {
-    const link = el('a', { href: `#/${item.name}`, class: app.route.name === item.name ? 'active' : '' });
+    const active = item.match.includes(app.route.name);
+    const link = el('a', { href: `#/${item.name}`, class: active ? 'active' : '' });
     link.append(icon(item.icon), el('span', { text: item.label }));
     link.addEventListener('click', () => closeDrawer());
     nav.append(link);
   }
-  side.append(nav);
+  inner.append(nav);
 
-  // Flight legs
-  const legWrap = el('div', { class: 'leg-list' });
+  // Chapters in flying order
+  const chapters = chaptersOrdered();
+  const chapWrap = el('div', { class: 'chap-nav' });
   const head = el('div', { class: 'eyebrow', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
-    el('span', { text: 'Flights' }),
-  );
-  if (adv) {
-    const add = el('button', { class: 'icon-btn', type: 'button', 'aria-label': 'New flight', style: { width: '28px', height: '28px' } });
-    add.append(icon('plus'));
-    add.addEventListener('click', () => openLegForm({ section: 'new', adventureId: adv.id, onSaved: (leg) => { app.navigate(`/journal/${leg.id}`); return app.refresh(); } }));
-    head.append(add);
-  }
-  legWrap.append(head);
+    el('span', { text: 'The book · chapters' }));
+  const add = el('button', { class: 'icon-btn', type: 'button', 'aria-label': 'New chapter', style: { width: '28px', height: '28px' } });
+  add.append(icon('plus'));
+  add.addEventListener('click', () => openChapterForm({ nextOrder: chapters.length, onSaved: (ch) => { navigate(`/chapter/${ch.id}`); return app.refresh(); } }));
+  head.append(add);
+  chapWrap.append(head);
 
-  if (!adv) {
-    legWrap.append(el('div', { class: 'muted', style: { padding: '8px 12px', fontSize: '12px' }, text: 'Start an adventure to log flights.' }));
-  } else if (store.legs.length === 0) {
-    legWrap.append(el('div', { class: 'muted', style: { padding: '8px 12px', fontSize: '12px' }, text: 'No flights logged yet.' }));
+  if (!chapters.length) {
+    chapWrap.append(el('div', { class: 'muted', style: { padding: '8px 12px', fontSize: '12px' }, text: 'Add a chapter to begin the book.' }));
   } else {
-    for (const leg of store.legs) {
-      const active = app.route.name === 'journal' && app.route.param === leg.id;
-      const route = [leg.dep_icao, leg.arr_icao].filter(Boolean).join(' → ') || 'Flight';
-      const item = el('a', { href: `#/journal/${leg.id}`, class: 'leg-item' + (active ? ' active' : '') },
-        el('div', { class: 'route', text: leg.title || route }),
-        el('div', { class: 'meta' },
-          el('span', { class: 'dot' + (leg.status === 'flown' ? '' : ' draft') }),
-          el('span', { text: leg.flight_date || 'Draft' }),
-          leg.title ? el('span', { text: route }) : null,
-        ),
-      );
+    chapters.forEach((ch, i) => {
+      const active = app.route.name === 'chapter' && app.route.param === ch.id;
+      const item = el('a', { href: `#/chapter/${ch.id}`, class: 'chap-item' + (active ? ' active' : '') },
+        el('span', { class: 'cn', text: String(i + 1).padStart(2, '0') }),
+        el('span', { class: 'ct', text: ch.title }));
       item.addEventListener('click', () => closeDrawer());
-      legWrap.append(item);
-    }
-  }
-  side.append(legWrap);
-
-  return side;
-}
-
-function openAdventurePicker(app) {
-  const body = el('div', {});
-  const list = el('div', { class: 'trash-list' });
-  if (store.adventures.length === 0) {
-    list.append(el('p', { class: 'muted', text: 'No adventures yet. Create your first to begin logging flights.' }));
-  }
-  for (const a of store.adventures) {
-    const pick = el('button', { class: 'btn btn-ghost', type: 'button', style: { flex: '1', justifyContent: 'flex-start' }, text: a.title });
-    pick.addEventListener('click', async () => {
-      setCurrent(a.id);
-      await loadCurrent();
-      handle.close();
-      app.navigate('/journal');
-      app.render();
+      chapWrap.append(item);
     });
-    const edit = el('button', { class: 'icon-btn', type: 'button', 'aria-label': `Edit ${a.title}` });
-    edit.append(icon('edit'));
-    edit.addEventListener('click', () => { handle.close(); openAdventureForm({ adventure: a, onSaved: () => app.reloadAll() }); });
-    const row = el('div', { class: 'trash-row' },
-      a.id === store.currentId ? el('span', { class: 'pill flown', text: 'Current' }) : null,
-      pick, el('div', { class: 'right' }, edit));
-    list.append(row);
   }
-  body.append(list);
-
-  const create = el('button', { class: 'btn btn-primary', type: 'button' });
-  create.append(icon('plus'), document.createTextNode(' New adventure'));
-  create.addEventListener('click', () => {
-    handle.close();
-    openAdventureForm({ onSaved: async (adv) => { setCurrent(adv.id); await app.reloadAll(); app.navigate('/journal'); } });
-  });
-  const close = el('button', { class: 'btn btn-ghost', type: 'button', text: 'Close' });
-  const handle = openDialog({ title: 'Adventures', body, actions: [close, create] });
-  close.addEventListener('click', () => handle.close());
+  inner.append(chapWrap);
+  return side;
 }
 
 export function toggleDrawer(force) {

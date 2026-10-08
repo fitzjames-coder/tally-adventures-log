@@ -43,12 +43,17 @@ export const TABLES = {
 
   legs: {
     fields: {
-      adventure_id: { type: 'id', required: true },
+      // Legacy link (PR #1). Kept additive; legs now hang off paragraphs.
+      adventure_id: { type: 'id', default: '' },
+      // Book structure (PR #2): a leg (sentence) belongs to a paragraph.
+      paragraph_id: { type: 'id' },
       number: { type: 'int', min: 0 },
       title: { type: 'string', max: 200 },
       status: { type: 'enum', values: ['draft', 'flown'], default: 'draft' },
-      // departure airport and date are the only user-facing required fields.
-      flight_date: { type: 'date', required: true },
+      // Departure is the only hard-required leg field; a planned leg may have
+      // no date yet (shown as "Planned"). flight_date defaults to '' so the
+      // NOT NULL column from 0001 stays satisfied.
+      flight_date: { type: 'date', default: '' },
       dep_icao: { type: 'icao', required: true },
       dep_name: { type: 'string', max: 200 },
       arr_icao: { type: 'icao' },
@@ -67,6 +72,16 @@ export const TABLES = {
       journal: { type: 'text' },
       pilot_notes: { type: 'json', shape: 'pilot-notes' },
       hero_photo_id: { type: 'id' },
+      // Planned flight plan (kept separate from what was flown). Populated by
+      // hand or by the SimBrief import; the import never touches flown fields.
+      planned_route: { type: 'text' },
+      planned_cruise_alt: { type: 'string', max: 20 },
+      planned_block_fuel: { type: 'string', max: 40 },
+      planned_ete_min: { type: 'int', min: 0 },
+      planned_tas_kt: { type: 'int', min: 0 },
+      planned_alternate_icao: { type: 'icao' },
+      planned_reserve_min: { type: 'int', min: 0 },
+      simbrief_ofp_ref: { type: 'string', max: 120 },
     },
   },
 
@@ -106,6 +121,54 @@ export const TABLES = {
       place_text: { type: 'string', max: 200 },
       sort_order: { type: 'int', default: 0 },
       favorite: { type: 'bool', default: false },
+    },
+  },
+
+  // --- Book structure (PR #2) ---
+
+  // Chapter = a big destination. Ordered by flying order (sort_order).
+  chapters: {
+    fields: {
+      title: { type: 'string', required: true, max: 200 },
+      subtitle: { type: 'string', max: 300 },
+      summary: { type: 'text' },
+      sort_order: { type: 'int', default: 0 },
+      career_tag: { type: 'string', max: 120 },
+      cover_photo_id: { type: 'id' },
+      status: { type: 'enum', values: ['planned', 'in-progress', 'complete'], default: 'planned' },
+    },
+  },
+
+  // Paragraph = a big chunk of flying inside a chapter.
+  paragraphs: {
+    fields: {
+      chapter_id: { type: 'id', required: true },
+      title: { type: 'string', required: true, max: 200 },
+      summary: { type: 'text' },
+      sort_order: { type: 'int', default: 0 },
+      hero_photo_id: { type: 'id' },
+    },
+  },
+
+  // Documents = OFP / Navigraph / other PDFs kept with a leg. Bytes live in R2
+  // under docs/<uuid>.
+  documents: {
+    fields: {
+      leg_id: { type: 'id', required: true },
+      kind: { type: 'enum', values: ['ofp', 'navigraph', 'other'], default: 'other' },
+      filename: { type: 'string', max: 400 },
+      content_type: { type: 'string', max: 100 },
+      size_bytes: { type: 'int', min: 0 },
+      r2_key: { type: 'string', max: 300 },
+    },
+  },
+
+  // Small key/value store for app settings (e.g. the SimBrief username / pilot
+  // id). No sign-in; this is a single shared config.
+  app_settings: {
+    fields: {
+      key: { type: 'string', required: true, max: 100 },
+      value: { type: 'text' },
     },
   },
 };

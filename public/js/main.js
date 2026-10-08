@@ -1,12 +1,14 @@
 // Bootstrap: register the service worker, request persistent storage once, load
-// data, and render the current route. No framework, no build step.
+// the book and render the current route. No framework, no build step.
 
 import { el, mount } from './dom.js';
 import { icon } from './icons.js';
 import { parseHash, navigate, onRoute } from './router.js';
-import { loadAll, loadCurrent, currentAdventure } from './state.js';
+import { loadAll, store } from './state.js';
 import { renderSidebar, toggleDrawer, closeDrawer } from './ui/sidebar.js';
-import { renderJournal } from './views/journal.js';
+import { renderBook } from './views/book.js';
+import { renderChapter } from './views/chapter.js';
+import { renderParagraph } from './views/paragraph.js';
 import { renderMap } from './views/map.js';
 import { renderPhotos } from './views/photos.js';
 import { renderStatistics } from './views/statistics.js';
@@ -16,7 +18,9 @@ import { renderTrash } from './views/trash.js';
 const root = document.getElementById('app');
 
 const VIEWS = {
-  journal: renderJournal,
+  book: renderBook,
+  chapter: renderChapter,
+  paragraph: renderParagraph,
   map: renderMap,
   photos: renderPhotos,
   statistics: renderStatistics,
@@ -24,18 +28,21 @@ const VIEWS = {
   trash: renderTrash,
 };
 
-const NAV_TITLE = { journal: 'Journal', map: 'Map', photos: 'Photos', statistics: 'Statistics', settings: 'Settings', trash: 'Trash' };
+const NAV_TITLE = { book: 'TALLY JOURNEY', chapter: 'Chapter', paragraph: 'Paragraph', map: 'Map', photos: 'Photos', statistics: 'Statistics', settings: 'Settings', trash: 'Trash' };
 
 const app = {
   route: parseHash(),
   navigate,
   render,
-  async refresh() { await loadCurrent(); render(); },
+  async refresh() { await loadAll(); render(); },
   async reloadAll() { await loadAll(); render(); },
+  photoOptions() {
+    return [...store.photosById.values()].map((p) => ({ value: p.id, label: p.caption || p.original_filename || p.id.slice(0, 8) }));
+  },
 };
 
 function renderView() {
-  const fn = VIEWS[app.route.name] || renderJournal;
+  const fn = VIEWS[app.route.name] || renderBook;
   try {
     return fn(app);
   } catch (err) {
@@ -48,14 +55,11 @@ function topbar() {
   const menu = el('button', { class: 'menu-btn', type: 'button', 'aria-label': 'Open menu' });
   menu.append(icon('menu'));
   menu.addEventListener('click', () => toggleDrawer());
-  const adv = currentAdventure();
-  const title = app.route.name === 'journal' && adv ? adv.title : (NAV_TITLE[app.route.name] || 'TALLY');
-  return el('div', { class: 'topbar' }, menu, el('div', { class: 'tb-title', text: title }));
+  return el('div', { class: 'topbar' }, menu, el('div', { class: 'tb-title', text: NAV_TITLE[app.route.name] || 'TALLY JOURNEY' }));
 }
 
 function render() {
   app.route = parseHash();
-
   const shell = el('div', { class: 'app' });
   const main = el('div', { class: 'main' });
   const canvas = el('div', { class: 'canvas', id: 'canvas' });
@@ -71,11 +75,8 @@ function render() {
 }
 
 function fatal(message) {
-  mount(root, el('div', { class: 'canvas' },
-    el('div', { class: 'empty' },
-      el('h3', { text: 'Could not start' }),
-      el('p', { class: 'muted', text: message }),
-    )));
+  mount(root, el('div', { class: 'canvas' }, el('div', { class: 'empty' },
+    el('h3', { text: 'Could not start' }), el('p', { class: 'muted', text: message }))));
 }
 
 function registerServiceWorker() {
@@ -99,10 +100,10 @@ async function boot() {
     await loadAll();
   } catch (err) {
     console.error(err);
-    fatal(err?.message || 'The journal could not load. Check that the database migration has been applied.');
+    fatal(err?.message || 'The journal could not load. Check that the database migrations have been applied.');
     return;
   }
-  if (!location.hash) location.hash = '#/journal';
+  if (!location.hash) location.hash = '#/book';
   onRoute(render);
   render();
 }

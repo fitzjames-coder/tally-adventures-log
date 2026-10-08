@@ -1,5 +1,5 @@
 {
-  // TALLY ADVENTURES Log - Cloudflare Worker with static assets, D1 and R2.
+  // TALLY JOURNEY - Cloudflare Worker with static assets, D1 and R2.
   // The D1 database and R2 bucket referenced below already exist; this config
   // only binds to them. Do not create resources or deploy from here.
   "$schema": "node_modules/wrangler/config-schema.json",

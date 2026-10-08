@@ -78,6 +78,7 @@ export class D1Store {
   async emptyTrash() {
     const counts = {};
     const photoKeys = [];
+    const docKeys = [];
 
     const trashedPhotos = await this.list('photos', { onlyDeleted: true });
     for (const p of trashedPhotos) {
@@ -85,16 +86,21 @@ export class D1Store {
         if (key) photoKeys.push(key);
       }
     }
+    const trashedDocs = await this.list('documents', { onlyDeleted: true });
+    for (const d of trashedDocs) {
+      if (d.r2_key) docKeys.push(d.r2_key);
+    }
 
     for (const t of TABLE_NAMES) {
       const res = await this.db.prepare(`DELETE FROM ${t} WHERE deleted_at IS NOT NULL`).run();
       if (res.meta.changes) counts[t] = res.meta.changes;
     }
 
-    if (this.bucket && photoKeys.length) {
-      await this.bucket.delete(photoKeys);
+    const objectKeys = [...photoKeys, ...docKeys];
+    if (this.bucket && objectKeys.length) {
+      await this.bucket.delete(objectKeys);
     }
-    return { counts, photoKeys };
+    return { counts, photoKeys, docKeys };
   }
 
   // --- media (R2) ---

@@ -1,0 +1,22 @@
+{
+  "fetch": { "status": "Success" },
+  "params": {
+    "request_id": "987654321",
+    "units": "kgs",
+    "time_generated": "1700000000",
+    "ofp_layout": "LIDO"
+  },
+  "origin": { "icao_code": "EGPK", "iata_code": "PIK", "name": "Glasgow Prestwick" },
+  "destination": { "icao_code": "BIKF", "iata_code": "KEF", "name": "Keflavik" },
+  "alternate": { "icao_code": "BGBW", "name": "Narsarsuaq" },
+  "general": {
+    "route": "GIRVA UL612 BLACA DCT RATSU DCT EMBOK DCT GUNPA",
+    "initial_altitude": "28000",
+    "cruise_tas": "285",
+    "route_distance": "755"
+  },
+  "fuel": { "plan_ramp": "4200", "reserve": "900", "taxi": "200" },
+  "times": { "est_time_enroute": "9000", "reserve_time": "2700", "sched_block": "9600" },
+  "aircraft": { "name": "Airbus A320", "icao_code": "A320", "reg": "G-TEST" },
+  "navlog": { "fix": [ { "true_airspeed": "280" }, { "true_airspeed": "290" } ] }
+}
