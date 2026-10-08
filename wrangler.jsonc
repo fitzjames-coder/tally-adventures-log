@@ -1,0 +1,37 @@
+{
+  // TALLY ADVENTURES Log - Cloudflare Worker with static assets, D1 and R2.
+  // The D1 database and R2 bucket referenced below already exist; this config
+  // only binds to them. Do not create resources or deploy from here.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tally-adventures-log",
+  "main": "src/worker.js",
+  "compatibility_date": "2025-01-01",
+
+  // Static app shell lives in ./public. Non-asset requests (e.g. /api/*, /media/*)
+  // fall through to the Worker; unknown routes return index.html for the SPA.
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application"
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "tally-adventures-log-db",
+      "database_id": "c67105ac-f321-40cb-a245-331cc55fd160",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "tally-adventures-log-media"
+    }
+  ],
+
+  "observability": {
+    "enabled": true
+  }
+}
