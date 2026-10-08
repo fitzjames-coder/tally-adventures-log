@@ -21,18 +21,21 @@ test('adventures: status defaults to planning and rejects unknown values', () =>
   assert.throws(() => validate('adventures', { title: 'X', status: 'flying' }), /one of/i);
 });
 
-test('legs: departure and date are the only required fields', () => {
-  assert.throws(() => validate('legs', { adventure_id: 'a1' }), (err) => {
+test('legs: departure is required; date is optional for planned legs', () => {
+  // Book-structure legs can be planned with no date yet, so only the departure
+  // airport is hard-required.
+  assert.throws(() => validate('legs', {}), (err) => {
     const joined = err.details.errors.join('\n');
-    assert.match(joined, /flight_date is required/i);
     assert.match(joined, /dep_icao is required/i);
+    assert.doesNotMatch(joined, /flight_date is required/i);
     return true;
   });
 
-  // With adventure, date and departure it validates; other fields stay optional.
-  const ok = validate('legs', { adventure_id: 'a1', flight_date: '2026-05-01', dep_icao: 'eddf' });
+  const ok = validate('legs', { dep_icao: 'eddf' });
   assert.equal(ok.dep_icao, 'EDDF'); // upper-cased
   assert.equal(ok.status, 'draft'); // default
+  assert.equal(ok.flight_date, ''); // default keeps the NOT NULL column satisfied
+  assert.equal(ok.adventure_id, ''); // legacy link now optional
   assert.equal(ok.arr_icao, undefined); // not supplied, not required
 });
 

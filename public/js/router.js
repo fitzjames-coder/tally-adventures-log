@@ -4,7 +4,7 @@
 export function parseHash() {
   const raw = (location.hash || '').replace(/^#/, '');
   const parts = raw.split('/').filter(Boolean);
-  const name = parts[0] || 'journal';
+  const name = parts[0] || 'book';
   return { name, param: parts[1] || null, parts };
 }
 

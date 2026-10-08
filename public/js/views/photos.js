@@ -1,30 +1,26 @@
-// Photos: every moment photo across the current adventure, with phase filters.
+// Photos: every moment photo across the whole book, with phase filters.
 
 import { el } from '../dom.js';
-import { store, currentAdventure, getPhoto, getLeg } from '../state.js';
+import { store, getPhoto } from '../state.js';
 import { photoTile, openPhotoDialog } from '../ui/photo.js';
 import { pageHead, emptyState } from './common.js';
+import { ghostBox, ghostPhaseBox } from '../ui/ghost.js';
 
 const PHASES = ['pre-departure', 'departure', 'en-route', 'approach', 'arrival'];
-const PHASE_LABEL = {
-  'pre-departure': 'Pre-departure',
-  departure: 'Departure',
-  'en-route': 'En route',
-  approach: 'Approach',
-  arrival: 'Arrival',
-};
+const PHASE_LABEL = { 'pre-departure': 'Pre-departure', departure: 'Departure', 'en-route': 'En route', approach: 'Approach', arrival: 'Arrival' };
 
 export function renderPhotos(app) {
-  const adv = currentAdventure();
-  if (!adv) return emptyState({ mark: 'photos', title: 'No adventure selected', message: 'Create an adventure to collect its photos.' });
-
   const withPhotos = store.moments.filter((m) => m.photo_id && getPhoto(m.photo_id));
 
   const wrap = el('div', {});
-  wrap.append(pageHead('Photos', `Every moment captured across “${adv.title}”`));
+  wrap.append(pageHead('Photos', 'Every moment captured across the book'));
 
   if (!withPhotos.length) {
-    wrap.append(emptyState({ mark: 'camera', title: 'No photos yet', message: 'Add a photo to a flight moment and it will appear here.' }));
+    wrap.append(ghostBox({
+      title: 'No photos yet',
+      text: 'Add a photo to a flight moment and it appears here, gathered across every chapter.',
+      visual: el('div', { class: 'phase-cols' }, ...PHASES.map((p) => ghostPhaseBox(PHASE_LABEL[p]))),
+    }));
     return wrap;
   }
 
@@ -34,16 +30,10 @@ export function renderPhotos(app) {
 
   const filterRow = el('div', { class: 'phase-filter', role: 'group', 'aria-label': 'Filter by phase' });
   const gridHost = el('div', {});
-
   const makeBtn = (key, label) => {
     const b = el('button', { class: 'phase-btn', type: 'button', 'aria-pressed': String(state.phase === key) },
       el('span', { text: label }), el('span', { class: 'count', text: String(counts[key]) }));
-    b.addEventListener('click', () => {
-      state.phase = key;
-      [...filterRow.children].forEach((c) => c.setAttribute('aria-pressed', 'false'));
-      b.setAttribute('aria-pressed', 'true');
-      renderGrid();
-    });
+    b.addEventListener('click', () => { state.phase = key; [...filterRow.children].forEach((c) => c.setAttribute('aria-pressed', 'false')); b.setAttribute('aria-pressed', 'true'); renderGrid(); });
     return b;
   };
   filterRow.append(makeBtn('all', 'All'));
@@ -53,7 +43,7 @@ export function renderPhotos(app) {
     const list = state.phase === 'all' ? withPhotos : withPhotos.filter((m) => m.phase === state.phase);
     gridHost.replaceChildren();
     if (!list.length) {
-      gridHost.append(emptyState({ mark: 'camera', small: true, title: `Nothing from ${PHASE_LABEL[state.phase].toLowerCase()} yet`, message: 'Photos tagged to this phase will show here.' }));
+      gridHost.append(emptyState({ mark: 'camera', small: true, title: `Nothing from ${PHASE_LABEL[state.phase].toLowerCase()} yet`, message: 'Photos tagged to this phase show here.' }));
       return;
     }
     const grid = el('div', { class: 'photo-grid' });

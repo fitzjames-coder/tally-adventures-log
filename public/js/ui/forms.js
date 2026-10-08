@@ -185,7 +185,7 @@ export function openAdventureForm({ adventure = null, onSaved } = {}) {
 }
 
 const LEG_SECTION_TITLES = {
-  new: 'New flight',
+  new: 'Add leg',
   summary: 'Flight summary',
   departure: 'Departure',
   arrival: 'Arrival',
@@ -196,6 +196,7 @@ const LEG_SECTION_TITLES = {
   journal: 'Journal',
   pilotnotes: 'Pilot notes',
   hero: 'Hero photo',
+  planned: 'Planned flight plan',
 };
 
 function legFields(section, leg, heroOptions) {
@@ -203,22 +204,33 @@ function legFields(section, leg, heroOptions) {
   switch (section) {
     case 'new':
       return [
-        { kind: 'date', name: 'flight_date', label: 'Date', required: true, value: l.flight_date },
+        { kind: 'number', name: 'number', label: 'Leg number', value: l.number, min: 0 },
+        { kind: 'select', name: 'status', label: 'Status', value: l.status || 'draft', options: enumOptions(['draft', 'flown'], { required: true }) },
         { kind: 'text', name: 'dep_icao', label: 'Departure (ICAO)', required: true, value: l.dep_icao, placeholder: '4-letter ICAO' },
-        { kind: 'text', name: 'dep_name', label: 'Departure name', value: l.dep_name },
         { kind: 'text', name: 'arr_icao', label: 'Arrival (ICAO)', value: l.arr_icao },
-        { kind: 'text', name: 'title', label: 'Title', full: true, value: l.title, placeholder: 'Optional title for this flight' },
+        { kind: 'date', name: 'flight_date', label: 'Date (once flown)', value: l.flight_date },
+        { kind: 'text', name: 'title', label: 'Title', full: true, value: l.title, placeholder: 'Optional title for this leg' },
       ];
     case 'summary':
       return [
         { kind: 'text', name: 'title', label: 'Title', full: true, value: l.title },
         { kind: 'number', name: 'number', label: 'Leg number', value: l.number, min: 0 },
         { kind: 'select', name: 'status', label: 'Status', value: l.status || 'draft', options: enumOptions(['draft', 'flown'], { required: true }) },
-        { kind: 'date', name: 'flight_date', label: 'Date', required: true, value: l.flight_date },
+        { kind: 'date', name: 'flight_date', label: 'Date (once flown)', value: l.flight_date },
         { kind: 'select', name: 'rules', label: 'Rules', value: l.rules, options: enumOptions(['VFR', 'IFR']) },
         { kind: 'select', name: 'light', label: 'Light', value: l.light, options: enumOptions(['Day', 'Night']) },
         { kind: 'number', name: 'distance_nm', label: 'Distance (NM)', value: l.distance_nm, min: 0, step: '0.1' },
         { kind: 'number', name: 'duration_min', label: 'Duration (min)', value: l.duration_min, min: 0 },
+      ];
+    case 'planned':
+      return [
+        { kind: 'textarea', name: 'planned_route', label: 'Planned route', full: true, rows: 3, value: l.planned_route, placeholder: 'Waypoints and airways' },
+        { kind: 'text', name: 'planned_cruise_alt', label: 'Cruise', value: l.planned_cruise_alt, placeholder: 'FLxxx' },
+        { kind: 'text', name: 'planned_block_fuel', label: 'Block fuel', value: l.planned_block_fuel },
+        { kind: 'number', name: 'planned_ete_min', label: 'ETE (min)', value: l.planned_ete_min, min: 0 },
+        { kind: 'number', name: 'planned_tas_kt', label: 'TAS (kt)', value: l.planned_tas_kt, min: 0 },
+        { kind: 'text', name: 'planned_alternate_icao', label: 'Alternate (ICAO)', value: l.planned_alternate_icao },
+        { kind: 'number', name: 'planned_reserve_min', label: 'Reserve (min)', value: l.planned_reserve_min, min: 0 },
       ];
     case 'departure':
       return [
@@ -258,19 +270,60 @@ function legFields(section, leg, heroOptions) {
   }
 }
 
-export function openLegForm({ leg = null, section = 'summary', adventureId, heroOptions = [], onSaved } = {}) {
+export function openLegForm({ leg = null, section = 'summary', paragraphId, nextNumber, heroOptions = [], onSaved } = {}) {
   const creating = section === 'new';
   openForm({
-    title: LEG_SECTION_TITLES[section] || 'Edit flight',
-    submitLabel: creating ? 'Add flight' : 'Save',
-    fields: legFields(section, leg, heroOptions),
+    title: LEG_SECTION_TITLES[section] || 'Edit leg',
+    submitLabel: creating ? 'Add leg' : 'Save',
+    fields: legFields(section, creating && nextNumber ? { ...leg, number: nextNumber } : leg, heroOptions),
     onSubmit: async (values) => {
       let saved;
       if (creating) {
-        saved = await api.legs.create({ ...values, adventure_id: adventureId });
+        saved = await api.legs.create({ ...values, paragraph_id: paragraphId });
       } else {
         saved = await api.legs.update(leg.id, values);
       }
+      if (onSaved) await onSaved(saved);
+    },
+  });
+}
+
+// --- Chapter / Paragraph forms ---
+
+export function openChapterForm({ chapter = null, nextOrder = 0, onSaved } = {}) {
+  const ch = chapter || {};
+  openForm({
+    title: chapter ? 'Edit chapter' : 'New chapter',
+    submitLabel: chapter ? 'Save' : 'Add chapter',
+    fields: [
+      { kind: 'text', name: 'title', label: 'Title', required: true, full: true, value: ch.title },
+      { kind: 'text', name: 'subtitle', label: 'Subtitle', full: true, value: ch.subtitle, placeholder: 'e.g. the places on either end' },
+      { kind: 'textarea', name: 'summary', label: 'Summary', full: true, value: ch.summary },
+      { kind: 'select', name: 'status', label: 'Status', value: ch.status || 'planned', options: enumOptions(['planned', 'in-progress', 'complete'], { required: true }) },
+      { kind: 'number', name: 'sort_order', label: 'Flying order', value: ch.sort_order ?? nextOrder, min: 0 },
+      { kind: 'text', name: 'career_tag', label: 'Career tag', value: ch.career_tag, placeholder: 'Optional label' },
+    ],
+    onSubmit: async (values) => {
+      const saved = chapter ? await api.chapters.update(chapter.id, values) : await api.chapters.create(values);
+      if (onSaved) await onSaved(saved);
+    },
+  });
+}
+
+export function openParagraphForm({ paragraph = null, chapterId, nextOrder = 0, onSaved } = {}) {
+  const p = paragraph || {};
+  openForm({
+    title: paragraph ? 'Edit paragraph' : 'New paragraph',
+    submitLabel: paragraph ? 'Save' : 'Add paragraph',
+    fields: [
+      { kind: 'text', name: 'title', label: 'Title', required: true, full: true, value: p.title },
+      { kind: 'textarea', name: 'summary', label: 'Summary', full: true, value: p.summary },
+      { kind: 'number', name: 'sort_order', label: 'Order', value: p.sort_order ?? nextOrder, min: 0 },
+    ],
+    onSubmit: async (values) => {
+      const saved = paragraph
+        ? await api.paragraphs.update(paragraph.id, values)
+        : await api.paragraphs.create({ ...values, chapter_id: chapterId });
       if (onSaved) await onSaved(saved);
     },
   });

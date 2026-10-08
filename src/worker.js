@@ -1,14 +1,17 @@
-// TALLY ADVENTURES Log - Worker entry point.
-// Responsibilities: the JSON API under /api, photo bytes under /media, and
-// handing everything else to the static asset server (the app shell).
+// TALLY JOURNEY - Worker entry point.
+// Responsibilities: the JSON API under /api, photo and document bytes under
+// /media, and handing everything else to the static asset server (the app shell).
 
 import { D1Store } from './lib/d1store.js';
 import { ApiError, badRequest, notFound, methodNotAllowed } from './lib/errors.js';
+import { makeZip } from './lib/zip.js';
 import * as c from './api/controllers.js';
 
 const RESOURCES = {
   adventures: c.adventures,
   destinations: c.destinations,
+  chapters: c.chapters,
+  paragraphs: c.paragraphs,
   legs: c.legs,
   moments: c.moments,
   'leg-destinations': c.legDestinations,
@@ -51,13 +54,43 @@ async function handleApi(request, env, url) {
     return json({ ok: true, app: 'TALLY JOURNEY' });
   }
 
-  // /api/export
+  // /api/export (JSON) and /api/export/csv (zip of per-table CSVs)
   if (parts[0] === 'export') {
     requireMethod(method, 'GET');
+    if (parts[1] === 'csv') {
+      const files = await c.exportCsvFiles(store);
+      const zip = makeZip(files.map((f) => ({ name: f.name, content: f.content })));
+      return new Response(zip, {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/zip',
+          'Content-Disposition': 'attachment; filename="tally-journey-export-csv.zip"',
+          'Cache-Control': 'no-store',
+        },
+      });
+    }
     const payload = await c.exportAll(store);
     return json(payload, 200, {
-      'Content-Disposition': 'attachment; filename="tally-adventures-log-export.json"',
+      'Content-Disposition': 'attachment; filename="tally-journey-export.json"',
     });
+  }
+
+  // /api/settings
+  if (parts[0] === 'settings' && parts.length === 1) {
+    if (method === 'GET') return json(await c.getSettings(store));
+    if (method === 'PATCH' || method === 'PUT' || method === 'POST') return json(await c.setSettings(store, await readJson(request)));
+    throw methodNotAllowed();
+  }
+
+  // /api/legs/:id/simbrief/preview
+  if (parts[0] === 'legs' && parts.length === 4 && parts[2] === 'simbrief' && parts[3] === 'preview') {
+    requireMethod(method, 'POST');
+    return json(await c.simbriefPreview(store, parts[1]));
+  }
+
+  // /api/documents ...
+  if (parts[0] === 'documents') {
+    return handleDocuments(store, request, method, parts);
   }
 
   // /api/trash, /api/trash/restore, /api/trash/empty
@@ -155,14 +188,42 @@ async function handlePhotos(store, request, method, parts) {
   throw notFound();
 }
 
+async function handleDocuments(store, request, method, parts) {
+  if (parts.length === 1) {
+    if (method === 'GET') return json(await c.documents.list(store, Object.fromEntries(new URL(request.url).searchParams)));
+    if (method === 'POST') {
+      const form = await readFormData(request);
+      const f = form.get('file');
+      if (!f || typeof f === 'string') throw badRequest('Missing document file in upload');
+      const meta = {};
+      for (const k of ['leg_id', 'kind', 'filename', 'size_bytes', 'content_type']) {
+        const v = form.get(k);
+        if (v !== null && typeof v === 'string') meta[k] = v;
+      }
+      if (!meta.filename && f.name) meta.filename = f.name;
+      const result = await c.createDocument(store, { file: { bytes: await f.arrayBuffer(), type: f.type }, meta });
+      return json(result, 201);
+    }
+    throw methodNotAllowed();
+  }
+  if (parts.length === 2) {
+    const id = parts[1];
+    if (method === 'GET') return json(await c.documents.get(store, id));
+    if (method === 'PATCH' || method === 'PUT') return json(await c.documents.update(store, id, await readJson(request)));
+    if (method === 'DELETE') return json(await c.documents.remove(store, id));
+    throw methodNotAllowed();
+  }
+  throw notFound();
+}
+
 // ---------------------------------------------------------------------------
-// Media (R2)
+// Media (R2): photos (originals/web/thumbs) and documents (docs)
 // ---------------------------------------------------------------------------
 
 async function handleMedia(request, env, pathname) {
   if (request.method !== 'GET' && request.method !== 'HEAD') throw methodNotAllowed();
   const key = decodeURIComponent(pathname.slice('/media/'.length));
-  if (!/^(originals|web|thumbs)\/[A-Za-z0-9._-]+$/.test(key)) throw notFound('Invalid media key');
+  if (!/^(originals|web|thumbs|docs)\/[A-Za-z0-9._-]+$/.test(key)) throw notFound('Invalid media key');
 
   const object = await env.MEDIA.get(key);
   if (!object) throw notFound('Media not found');

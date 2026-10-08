@@ -1,19 +1,21 @@
 // Trash: soft-deleted items with Restore, and a single hard-delete action
-// (Empty trash) guarded by an in-page confirmation.
+// (Empty trash) guarded by an in-page confirmation. Covers every table.
 
 import { el } from '../dom.js';
 import { icon } from '../icons.js';
 import { api } from '../api.js';
-import { loadCurrent } from '../state.js';
 import { confirmDialog, toast } from '../ui/dialog.js';
 import { pageHead, emptyState, ghostButton } from './common.js';
 
 const TYPE_LABEL = {
-  adventures: 'Adventure',
-  destinations: 'Destination',
+  chapters: 'Chapter',
+  paragraphs: 'Paragraph',
   legs: 'Flight',
   moments: 'Moment',
   photos: 'Photo',
+  documents: 'Document',
+  adventures: 'Adventure',
+  destinations: 'Destination',
 };
 
 export function renderTrash(app) {
@@ -36,7 +38,7 @@ async function load(app, host) {
   }
 
   if (!items.length) {
-    host.replaceChildren(emptyState({ mark: 'trash', title: 'Trash is empty', message: 'Nothing deleted. Items you delete land here and can be restored.' }));
+    host.replaceChildren(emptyState({ mark: 'trash', title: 'Trash is empty', message: 'Items you delete land here and can be restored.' }));
     return;
   }
 
@@ -53,9 +55,8 @@ async function load(app, host) {
     if (!ok) return;
     try {
       await api.trash.empty();
-      await loadCurrent();
       toast('Trash emptied');
-      app.render();
+      await app.refresh();
     } catch (err) {
       toast(err?.message || 'Could not empty trash', { error: true });
     }
@@ -64,7 +65,6 @@ async function load(app, host) {
 
   const list = el('div', { class: 'trash-list' });
   for (const item of items) list.append(trashRow(app, item));
-
   host.replaceChildren(tools, list);
 }
 
@@ -72,9 +72,8 @@ function trashRow(app, item) {
   const restore = ghostButton(' Restore', 'restore', async () => {
     try {
       await api.trash.restore(item.type, item.id);
-      await loadCurrent();
       toast('Restored');
-      app.render();
+      await app.refresh();
     } catch (err) {
       toast(err?.message || 'Could not restore', { error: true });
     }
@@ -83,8 +82,6 @@ function trashRow(app, item) {
     el('div', {},
       el('div', { class: 't-type', text: TYPE_LABEL[item.type] || item.type }),
       el('div', { class: 't-label', text: item.label }),
-      item.deleted_at ? el('div', { class: 'muted', style: { fontSize: '12px' }, text: `Deleted ${String(item.deleted_at).slice(0, 10)}` }) : null,
-    ),
-    el('div', { class: 'right' }, restore),
-  );
+      item.deleted_at ? el('div', { class: 'muted', style: { fontSize: '12px' }, text: `Deleted ${String(item.deleted_at).slice(0, 10)}` }) : null),
+    el('div', { class: 'right' }, restore));
 }

@@ -51,6 +51,8 @@ export const api = {
 
   adventures: crud('adventures'),
   destinations: crud('destinations'),
+  chapters: crud('chapters'),
+  paragraphs: crud('paragraphs'),
   legs: crud('legs'),
   moments: crud('moments'),
   legDestinations: crud('leg-destinations'),
@@ -64,6 +66,19 @@ export const api = {
     remove: (id) => req('DELETE', `/photos/${id}`),
     upload: (formData) => req('POST', '/photos', { body: formData, isForm: true }),
   },
+
+  documents: {
+    list: (query) => req('GET', `/documents${qs(query)}`),
+    remove: (id) => req('DELETE', `/documents/${id}`),
+    upload: (formData) => req('POST', '/documents', { body: formData, isForm: true }),
+  },
+
+  settings: {
+    get: () => req('GET', '/settings'),
+    save: (body) => req('PATCH', '/settings', { body }),
+  },
+
+  simbriefPreview: (legId) => req('POST', `/legs/${legId}/simbrief/preview`),
 
   trash: {
     list: () => req('GET', '/trash'),

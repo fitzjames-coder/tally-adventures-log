@@ -75,6 +75,7 @@ export class MemoryStore {
   async emptyTrash() {
     const counts = {};
     const photoKeys = [];
+    const docKeys = [];
     for (const t of TABLE_NAMES) {
       const map = this.tables[t];
       let n = 0;
@@ -85,13 +86,14 @@ export class MemoryStore {
             if (key) photoKeys.push(key);
           }
         }
+        if (t === 'documents' && row.r2_key) docKeys.push(row.r2_key);
         map.delete(id);
         n += 1;
       }
       if (n) counts[t] = n;
     }
-    for (const key of photoKeys) this.objects.delete(key);
-    return { counts, photoKeys };
+    for (const key of [...photoKeys, ...docKeys]) this.objects.delete(key);
+    return { counts, photoKeys, docKeys };
   }
 
   // --- media (R2 stand-in) ---

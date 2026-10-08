@@ -112,7 +112,7 @@ test('export returns every table, including trashed rows', async () => {
   await c.legs.remove(store, legA.id);
 
   const dump = await c.exportAll(store);
-  assert.equal(dump.app, 'TALLY ADVENTURES Log');
+  assert.equal(dump.app, 'TALLY JOURNEY');
   assert.equal(dump.data.adventures.length, 1);
   assert.equal(dump.data.legs.length, 1); // trashed leg still exported
   assert.ok(dump.data.legs[0].deleted_at);
