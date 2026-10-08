@@ -48,7 +48,7 @@ async function handleApi(request, env, url) {
 
   // /api/health
   if (parts.length === 1 && parts[0] === 'health') {
-    return json({ ok: true, app: 'TALLY ADVENTURES Log' });
+    return json({ ok: true, app: 'TALLY JOURNEY' });
   }
 
   // /api/export

@@ -1,4 +1,4 @@
-/* TALLY ADVENTURES Log - app styles.
+/* TALLY JOURNEY - app styles.
    Design tokens are exact values from the brief and must not be rounded or
    swapped. Colour rules: text on navy is cream; text on amber is navy; amber
    text never appears on cream (eyebrow labels on cream are navy).
@@ -82,10 +82,9 @@ button { font-family: inherit; }
 
 /* ----------------------------------------------------------------- sidebar */
 
-.brand { display: flex; align-items: center; gap: 12px; padding: 20px 20px 14px; }
-.brand .mark { width: 38px; height: 38px; flex: none; }
-.brand .wordmark { font-family: var(--serif); font-weight: 700; font-size: 20px; letter-spacing: 0.06em; color: var(--cream); }
-.brand .wordmark small { display: block; font-family: var(--ui); font-weight: 400; font-size: 11px; letter-spacing: 0.18em; color: var(--amber); text-transform: uppercase; }
+/* Brand wordmark image fills the header, with the nav items' side padding. */
+.brand { display: block; padding: 18px 10px 14px; }
+.brand .brand-wordmark { display: block; width: 100%; height: auto; }
 
 .adv-switch {
   margin: 0 14px 10px;
@@ -189,9 +188,11 @@ button { font-family: inherit; }
 
 .empty { text-align: center; padding: 44px 20px; border: 1px dashed var(--line); border-radius: var(--radius); background: var(--card); }
 .empty .em-mark { width: 54px; height: 54px; margin: 0 auto 14px; color: var(--navy); opacity: 0.8; }
+.empty .em-plane { height: 64px; width: auto; margin: 0 auto 14px; display: block; }
 .empty h3 { font-size: 20px; margin-bottom: 6px; }
 .empty p { color: var(--text-2); max-width: 46ch; margin: 0 auto 16px; }
 .empty.small { padding: 26px 16px; }
+.welcome .welcome-wordmark { display: block; width: 100%; max-width: 420px; height: auto; margin: 0 auto 18px; }
 
 /* ----------------------------------------------------------------- journal */
 

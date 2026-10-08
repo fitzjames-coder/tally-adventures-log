@@ -24,15 +24,13 @@ const PHASE_LABEL = {
 export function renderJournal(app) {
   const adv = currentAdventure();
   if (!adv) {
-    return emptyState({
-      mark: 'plane',
-      title: 'Welcome to TALLY ADVENTURES Log',
-      message: 'Create your first adventure, then log the flights that bring it to life.',
-      actionLabel: 'New adventure',
-      onAction: () => openAdventureForm({
-        onSaved: async (created) => { setCurrent(created.id); await app.reloadAll(); app.navigate('/journal'); },
-      }),
-    });
+    const box = el('div', { class: 'empty welcome' });
+    box.append(el('img', { class: 'welcome-wordmark', src: '/brand/wordmark-on-cream.png', alt: 'TALLY JOURNEY — Every flight has a story' }));
+    box.append(el('p', { text: 'Create your first adventure, then log the flights that bring it to life.' }));
+    box.append(primaryButton(' New adventure', 'plus', () => openAdventureForm({
+      onSaved: async (created) => { setCurrent(created.id); await app.reloadAll(); app.navigate('/journal'); },
+    })));
+    return box;
   }
 
   if (store.legs.length === 0) {

@@ -42,7 +42,11 @@ export function ghostButton(label, iconName, onClick) {
 
 export function emptyState({ mark = 'compass', title, message, actionLabel, onAction, small = false }) {
   const box = el('div', { class: 'empty' + (small ? ' small' : '') });
-  box.append(icon(mark, 'em-mark'));
+  if (mark === 'plane') {
+    box.append(el('img', { class: 'em-plane', src: '/brand/plane-top.png', alt: '', height: 64 }));
+  } else {
+    box.append(icon(mark, 'em-mark'));
+  }
   box.append(el('h3', { text: title }));
   if (message) box.append(el('p', { text: message }));
   if (actionLabel && onAction) box.append(primaryButton(` ${actionLabel}`, 'plus', onAction));

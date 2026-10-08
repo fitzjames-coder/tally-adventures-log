@@ -1,26 +1,11 @@
 // The fixed navy sidebar (desktop) / slide-in drawer (phone): brand, current
 // adventure, primary nav, and the list of flight legs.
 
-import { el, svgEl } from '../dom.js';
+import { el } from '../dom.js';
 import { icon } from '../icons.js';
 import { store, currentAdventure, setCurrent, loadCurrent } from '../state.js';
 import { openDialog } from './dialog.js';
 import { openAdventureForm, openLegForm } from './forms.js';
-
-const MARK = `
-<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-  <rect x="2" y="2" width="60" height="60" rx="15" fill="#163973"/>
-  <path fill="#F5E8D8" d="M52 12 L12 30 L28 34 Z"/>
-  <path fill="#F5E8D8" d="M52 12 L28 34 L34 50 Z"/>
-  <path fill="#163973" opacity="0.28" d="M52 12 L28 34 L31 41 Z"/>
-  <rect x="16" y="54" width="32" height="4" rx="2" fill="#F09A1F"/>
-</svg>`;
-
-export function brandMark(cls = 'mark') {
-  const svg = svgEl(MARK);
-  svg.setAttribute('class', cls);
-  return svg;
-}
 
 const NAV = [
   { name: 'journal', label: 'Journal', icon: 'journal' },
@@ -37,8 +22,7 @@ export function renderSidebar(app) {
 
   // Brand
   const brand = el('div', { class: 'brand' },
-    brandMark(),
-    el('div', { class: 'wordmark' }, 'TALLY', el('small', { text: 'Adventures Log' })),
+    el('img', { class: 'brand-wordmark', src: '/brand/wordmark-on-navy.png', alt: 'TALLY JOURNEY — Every flight has a story' }),
   );
   side.append(brand);
 

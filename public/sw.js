@@ -4,7 +4,7 @@
 //  - /media: cache-first, but a photo is only added to the cache after it has
 //    actually been fetched (i.e. viewed). Nothing is pre-downloaded.
 
-const SHELL = 'tally-shell-v1';
+const SHELL = 'tally-shell-v2';
 const MEDIA = 'tally-media-v1';
 
 const SHELL_ASSETS = [
@@ -16,7 +16,13 @@ const SHELL_ASSETS = [
   '/js/main.js',
   '/fonts/B612-Regular.ttf',
   '/fonts/B612-Bold.ttf',
-  '/icons/icon.svg',
+  '/brand/icon-192.png',
+  '/brand/icon-512.png',
+  '/brand/icon-1024.png',
+  '/brand/apple-touch-icon.png',
+  '/brand/wordmark-on-navy.png',
+  '/brand/wordmark-on-cream.png',
+  '/brand/plane-top.png',
 ];
 
 self.addEventListener('install', (event) => {

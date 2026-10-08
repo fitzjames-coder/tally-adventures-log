@@ -1,4 +1,4 @@
-# TALLY ADVENTURES Log
+# TALLY JOURNEY
 
 A cloud PWA flight journal for Microsoft Flight Simulator trips. One Cloudflare
 Worker serves the static app shell plus a JSON API, backed by a D1 database and
@@ -26,7 +26,7 @@ public/            static app shell (served by the Worker's ASSETS binding)
   js/lib/          statistics.js (shared with the test suite)
   css/fonts.css    @font-face for B612 (fetched into fonts/ by `npm run setup`)
   fonts/OFL.txt    SIL Open Font License for B612
-  icons/           airplane-mark icons (SVG)
+  brand/           TALLY JOURNEY brand assets (app icons, wordmarks, plane)
   manifest.webmanifest, sw.js
 scripts/
   setup-assets.mjs fetches the B612 TTFs into public/fonts
@@ -56,7 +56,7 @@ npm run dev                 # runs setup automatically, then wrangler dev
 
 > `npm run dev` runs the asset setup first (via the `predev` hook). Fonts are
 > fetched rather than committed so the repository stays free of binary blobs;
-> the airplane-mark icons are committed as SVG.
+> the app icons and wordmarks are the brand PNGs in `public/brand`.
 
 Then open the printed URL (default http://127.0.0.1:8787). The app starts empty;
 create your first adventure from the sidebar, then log a flight.

@@ -16,7 +16,7 @@ export function renderSettings(app) {
   // App
   const appCard = el('div', { class: 'card section' });
   appCard.append(sectionHead('App'));
-  appCard.append(el('div', { class: 'eyebrow', text: 'Name' }), el('div', { style: { fontFamily: 'var(--serif)', fontSize: '20px', color: 'var(--navy)' }, text: 'TALLY ADVENTURES Log' }));
+  appCard.append(el('div', { class: 'eyebrow', text: 'Name' }), el('div', { style: { fontFamily: 'var(--serif)', fontSize: '20px', color: 'var(--navy)' }, text: 'TALLY JOURNEY' }));
   appCard.append(el('p', { class: 'muted', style: { marginTop: '8px' }, text: 'A private flight journal. No sign-in, by design.' }));
   wrap.append(appCard);
 
