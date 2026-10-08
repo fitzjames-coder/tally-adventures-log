@@ -1,22 +1,8 @@
 /* TALLY ADVENTURES Log - app styles.
    Design tokens are exact values from the brief and must not be rounded or
    swapped. Colour rules: text on navy is cream; text on amber is navy; amber
-   text never appears on cream (eyebrow labels on cream are navy). */
-
-@font-face {
-  font-family: 'B612';
-  src: url('/fonts/B612-Regular.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'B612';
-  src: url('/fonts/B612-Bold.ttf') format('truetype');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
+   text never appears on cream (eyebrow labels on cream are navy).
+   The B612 @font-face rules live in fonts.css (base64-embedded, OFL). */
 
 :root {
   --navy: #163973;

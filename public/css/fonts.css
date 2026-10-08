@@ -1,0 +1,17 @@
+/* B612 (SIL Open Font License). The TTF files live in /public/fonts and are
+   fetched by `npm run setup` (scripts/setup-assets.mjs) so the repository stays
+   free of binary blobs. Full license text: /fonts/OFL.txt */
+@font-face {
+  font-family: 'B612';
+  src: url('/fonts/B612-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'B612';
+  src: url('/fonts/B612-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}

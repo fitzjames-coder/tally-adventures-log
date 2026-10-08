@@ -24,9 +24,12 @@ public/            static app shell (served by the Worker's ASSETS binding)
   css/styles.css   design system (navy / amber / cream tokens)
   js/              ES modules: views, UI, API client, image resizing
   js/lib/          statistics.js (shared with the test suite)
-  fonts/           B612 Regular + Bold (OFL)
-  icons/           app icons generated from the airplane mark
+  css/fonts.css    @font-face for B612 (fetched into fonts/ by `npm run setup`)
+  fonts/OFL.txt    SIL Open Font License for B612
+  icons/           airplane-mark icons (SVG)
   manifest.webmanifest, sw.js
+scripts/
+  setup-assets.mjs fetches the B612 TTFs into public/fonts
 src/
   worker.js        routing for /api and /media, static fallback
   api/controllers.js   store-agnostic business logic
@@ -42,13 +45,18 @@ Requires Node 18+.
 
 ```sh
 npm install                 # installs wrangler (dev dependency only)
+npm run setup               # fetches the B612 fonts into public/fonts
 
 # Apply the schema to the local D1 database once:
 npx wrangler d1 migrations apply tally-adventures-log-db --local
 
 # Start the dev server (Worker + static assets + local D1 + local R2):
-npx wrangler dev
+npm run dev                 # runs setup automatically, then wrangler dev
 ```
+
+> `npm run dev` runs the asset setup first (via the `predev` hook). Fonts are
+> fetched rather than committed so the repository stays free of binary blobs;
+> the airplane-mark icons are committed as SVG.
 
 Then open the printed URL (default http://127.0.0.1:8787). The app starts empty;
 create your first adventure from the sidebar, then log a flight.

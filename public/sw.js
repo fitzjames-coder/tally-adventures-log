@@ -10,14 +10,13 @@ const MEDIA = 'tally-media-v1';
 const SHELL_ASSETS = [
   '/',
   '/index.html',
+  '/css/fonts.css',
   '/css/styles.css',
   '/manifest.webmanifest',
   '/js/main.js',
   '/fonts/B612-Regular.ttf',
   '/fonts/B612-Bold.ttf',
   '/icons/icon.svg',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
 ];
 
 self.addEventListener('install', (event) => {
