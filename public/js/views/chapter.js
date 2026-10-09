@@ -1,4 +1,4 @@
-// Chapter: header + the paragraphs (big chunks of flying) inside it.
+// Destination: header + the stages (big chunks of flying) inside it.
 
 import { el } from '../dom.js';
 import { icon } from '../icons.js';
@@ -8,13 +8,13 @@ import { openChapterForm, openParagraphForm } from '../ui/forms.js';
 import { confirmDialog, toast } from '../ui/dialog.js';
 import { lazyImg } from '../lazy.js';
 import { mediaUrl } from '../ui/photo.js';
-import { stepper, crumbs } from '../ui/stepper.js';
+import { crumbs } from '../ui/stepper.js';
 import { ghostBox, ghostSchematic } from '../ui/ghost.js';
 import { emptyState, editButton, primaryButton, ghostButton } from './common.js';
 import { statusPill } from './book.js';
 import { navigate } from '../router.js';
 
-// Derive a paragraph's status from its legs.
+// Derive a stage's status from its legs.
 function paragraphStatus(legs) {
   const p = flownProgress(legs);
   if (p.total === 0) return 'planned';
@@ -29,7 +29,7 @@ function legStatusLabel(status) {
 
 export function renderChapter(app) {
   const chapter = getChapter(app.route.param);
-  if (!chapter) return emptyState({ mark: 'book', title: 'Chapter not found', message: 'It may have been moved to Trash.' });
+  if (!chapter) return emptyState({ mark: 'book', title: 'Destination not found', message: 'It may have been moved to Trash.' });
 
   const index = chaptersOrdered().findIndex((c) => c.id === chapter.id);
   const num = String(index + 1).padStart(2, '0');
@@ -38,21 +38,20 @@ export function renderChapter(app) {
   const prog = flownProgress(chapterLegs);
 
   const wrap = el('div', {});
-  wrap.append(crumbs([{ label: 'Book', to: '/book' }, { label: `Chapter ${index + 1} · ${chapter.title}` }]));
-  wrap.append(stepper('chapter', { chapterId: chapter.id }));
+  wrap.append(crumbs([{ label: chapter.title }]));
 
   // Header
-  const del = ghostButton(' Delete chapter', 'trash', async () => {
-    const ok = await confirmDialog({ title: 'Delete chapter', message: `Move “${chapter.title}” to Trash? Its paragraphs and legs stay in the database and can be restored.`, confirmLabel: 'Move to Trash', danger: true });
+  const del = ghostButton(' Delete destination', 'trash', async () => {
+    const ok = await confirmDialog({ title: 'Delete destination', message: `Move “${chapter.title}” to Trash? Its stages and legs stay in the database and can be restored.`, confirmLabel: 'Move to Trash', danger: true });
     if (!ok) return;
     await api.chapters.remove(chapter.id);
-    toast('Chapter moved to Trash');
+    toast('Destination moved to Trash');
     navigate('/book');
     await app.refresh();
   });
   const head = el('div', { class: 'chapter-head' },
     el('div', {},
-      el('div', { class: 'eyebrow', text: `Chapter ${num}${chapter.subtitle ? ' · ' + chapter.subtitle : ''}` }),
+      el('div', { class: 'eyebrow', text: `Destination ${num}${chapter.subtitle ? ' · ' + chapter.subtitle : ''}` }),
       el('h1', { text: chapter.title }),
       chapter.summary ? el('div', { class: 'summary', text: chapter.summary }) : null,
       el('div', { class: 'chiprow', style: { marginTop: '14px' } },
@@ -66,23 +65,23 @@ export function renderChapter(app) {
   );
   wrap.append(head);
 
-  // Paragraphs
+  // Stages
   const toc = el('div', { class: 'toc-head' },
     el('div', {},
-      el('div', { class: 'eyebrow', text: 'Paragraphs · big chunks of flying' }),
-      el('h2', { text: `${paragraphs.length} ${paragraphs.length === 1 ? 'paragraph' : 'paragraphs'}` }),
+      el('div', { class: 'eyebrow', text: 'Stages · big chunks of flying' }),
+      el('h2', { text: `${paragraphs.length} ${paragraphs.length === 1 ? 'stage' : 'stages'}` }),
     ),
     el('div', { class: 'chiprow' },
-      el('span', { class: 'hint', text: 'Tap a paragraph to open its page.' }),
-      primaryButton(' New paragraph', 'plus', () => openParagraphForm({ chapterId: chapter.id, nextOrder: paragraphs.length, onSaved: () => app.refresh() })),
+      el('span', { class: 'hint', text: 'Tap a stage to open its page.' }),
+      primaryButton(' New stage', 'plus', () => openParagraphForm({ chapterId: chapter.id, nextOrder: paragraphs.length, onSaved: () => app.refresh() })),
     ),
   );
   wrap.append(toc);
 
   if (!paragraphs.length) {
     wrap.append(ghostBox({
-      title: 'No paragraphs yet',
-      text: 'A paragraph is a big chunk of flying — a crossing, a tour, a leg home. Add one and its legs become the sentences.',
+      title: 'No stages yet',
+      text: 'A stage is a big chunk of flying — a crossing, a tour, a leg home. Add one and its legs line up inside it.',
       visual: ghostSchematic(false),
     }));
     return wrap;
@@ -121,12 +120,12 @@ function paragraphRow(p, index) {
   const row = el('div', { class: 'para-row' },
     cover,
     el('div', {},
-      el('div', { class: 'eyebrow', text: `Paragraph ${String(index + 1).padStart(2, '0')} · ${route}` }),
+      el('div', { class: 'eyebrow', text: `Stage ${String(index + 1).padStart(2, '0')} · ${route}` }),
       el('h3', { text: p.title }),
       statusPill(status),
     ),
     el('div', { class: 'para-right' },
-      el('div', { class: 'eyebrow', text: `Sentences · ${legs.length} ${legs.length === 1 ? 'leg' : 'legs'}` }),
+      el('div', { class: 'eyebrow', text: `Legs · ${legs.length} ${legs.length === 1 ? 'leg' : 'legs'}` }),
       chips,
     ),
   );

@@ -1,4 +1,4 @@
-// Pure copy helpers for the paragraph page. DOM-free so they are unit-testable.
+// Pure copy helpers for the stage page. DOM-free so they are unit-testable.
 
 // "Along the way" empty state. A flown leg that simply has no timed moments is
 // not the same as a leg that has not been flown yet.

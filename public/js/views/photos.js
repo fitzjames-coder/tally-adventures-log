@@ -1,4 +1,4 @@
-// Photos: every moment photo across the whole book, with phase filters.
+// Photos: every moment photo across the whole journey, with phase filters.
 
 import { el } from '../dom.js';
 import { store, getPhoto } from '../state.js';
@@ -13,12 +13,12 @@ export function renderPhotos(app) {
   const withPhotos = store.moments.filter((m) => m.photo_id && getPhoto(m.photo_id));
 
   const wrap = el('div', {});
-  wrap.append(pageHead('Photos', 'Every moment captured across the book'));
+  wrap.append(pageHead('Photos', 'Every moment captured across the journey'));
 
   if (!withPhotos.length) {
     wrap.append(ghostBox({
       title: 'No photos yet',
-      text: 'Add a photo to a flight moment and it appears here, gathered across every chapter.',
+      text: 'Add a photo to a flight moment and it appears here, gathered across every destination.',
       visual: el('div', { class: 'phase-cols' }, ...PHASES.map((p) => ghostPhaseBox(PHASE_LABEL[p]))),
     }));
     return wrap;

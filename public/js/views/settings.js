@@ -40,7 +40,7 @@ export function renderSettings(app) {
   // Data
   const dataCard = el('div', { class: 'card section' });
   dataCard.append(sectionHead('Your data'));
-  dataCard.append(el('p', { class: 'muted', text: 'Export everything — chapters, paragraphs, legs (flown and planned), moments, photos and documents. CSV gives one file per table in a zip; JSON gives a single document. Trashed rows are included.' }));
+  dataCard.append(el('p', { class: 'muted', text: 'Export everything — destinations, stages, legs (flown and planned), moments, photos and documents. CSV gives one file per table in a zip; JSON gives a single document. Trashed rows are included.' }));
   const csvBtn = primaryButton(' Download CSV', 'download', () => downloadUrl('/api/export/csv', csvBtn));
   const jsonBtn = ghostButton(' Export JSON', 'download', () => doJsonExport(jsonBtn));
   const trashLink = ghostButton(' Open Trash', 'trash', () => app.navigate('/trash'));

@@ -1,10 +1,10 @@
-// Book (home): cover with the journey's shape, then the chapters in flying order.
+// Journey home: cover with the journey's shape, then the destinations in flying order.
 
 import { el } from '../dom.js';
 import { store, chaptersOrdered, legsForChapter, flownProgress, isFlown } from '../state.js';
 import { formatDuration } from '../lib/statistics.js';
 import { openChapterForm } from '../ui/forms.js';
-import { stepper, crumbs } from '../ui/stepper.js';
+import { crumbs } from '../ui/stepper.js';
 import { legSchematic, ghostSchematic, ghostBox } from '../ui/ghost.js';
 import { pageHead, emptyState, primaryButton } from './common.js';
 import { navigate } from '../router.js';
@@ -28,8 +28,7 @@ function allLegsInFlyingOrder() {
 
 export function renderBook(app) {
   const wrap = el('div', {});
-  wrap.append(crumbs([{ label: 'Book' }]));
-  wrap.append(stepper('book'));
+  wrap.append(crumbs([]));
 
   const chapters = chaptersOrdered();
   const allLegs = allLegsInFlyingOrder();
@@ -39,11 +38,11 @@ export function renderBook(app) {
   // Cover / hero
   const hero = el('section', { class: 'book-hero' });
   const left = el('div', {},
-    el('div', { class: 'eyebrow', text: 'The book · opens here' }),
+    el('div', { class: 'eyebrow', text: 'The journey · opens here' }),
     el('div', { class: 'lede', text: 'Every flight has a story. The destinations give it a reason — the flights write it. This is the whole journey, in flying order.' }),
   );
   const stats = el('div', { class: 'book-stats' });
-  stats.append(bookStat(chapters.length, 'Chapters'));
+  stats.append(bookStat(chapters.length, 'Destinations'));
   stats.append(bookStat(`${flown.length} / ${allLegs.length}`, 'Legs flown'));
   stats.append(bookStat(formatDuration(airMin), 'In the air'));
   left.append(stats);
@@ -56,19 +55,19 @@ export function renderBook(app) {
   const toc = el('div', { class: 'toc-head' },
     el('div', {},
       el('div', { class: 'eyebrow', text: 'Table of contents · in flying order' }),
-      el('h2', { text: 'The chapters' }),
+      el('h2', { text: 'Destinations' }),
     ),
     el('div', { class: 'chiprow' },
       el('span', { class: 'hint', text: 'Career tags are optional labels, not the order.' }),
-      primaryButton(' New chapter', 'plus', () => openChapterForm({ nextOrder: chapters.length, onSaved: () => app.refresh() })),
+      primaryButton(' New destination', 'plus', () => openChapterForm({ nextOrder: chapters.length, onSaved: () => app.refresh() })),
     ),
   );
   wrap.append(toc);
 
   if (!chapters.length) {
     wrap.append(ghostBox({
-      title: 'No chapters yet',
-      text: 'A chapter is a big destination. Add your first to start the book — the table of contents fills in flying order.',
+      title: 'No destinations yet',
+      text: 'A destination is a big part of the journey. Add your first to begin — the table of contents fills in flying order.',
       visual: ghostSchematic(false),
     }));
     return wrap;
