@@ -1,4 +1,4 @@
-// Statistics: computed from flown legs across the whole book. Planned legs and
+// Statistics: computed from flown legs across the whole journey. Planned legs and
 // anything not yet flown never count. No landing counts anywhere.
 
 import { el } from '../dom.js';
@@ -11,7 +11,7 @@ export function renderStatistics() {
   const stats = computeStatistics(store.legs, store.moments);
 
   const wrap = el('div', {});
-  wrap.append(pageHead('Statistics', 'Flown flights across the book'));
+  wrap.append(pageHead('Statistics', 'Flown flights across the journey'));
 
   if (stats.flightsFlown === 0) {
     wrap.append(ghostBox({

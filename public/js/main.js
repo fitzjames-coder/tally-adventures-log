@@ -1,5 +1,5 @@
 // Bootstrap: register the service worker, request persistent storage once, load
-// the book and render the current route. No framework, no build step.
+// the journey and render the current route. No framework, no build step.
 
 import { el, mount } from './dom.js';
 import { icon } from './icons.js';
@@ -28,7 +28,7 @@ const VIEWS = {
   trash: renderTrash,
 };
 
-const NAV_TITLE = { book: 'TALLY JOURNEY', chapter: 'Chapter', paragraph: 'Paragraph', map: 'Map', photos: 'Photos', statistics: 'Statistics', settings: 'Settings', trash: 'Trash' };
+const NAV_TITLE = { book: 'TALLY JOURNEY', chapter: 'Destination', paragraph: 'Stage', map: 'Map', photos: 'Photos', statistics: 'Statistics', settings: 'Settings', trash: 'Trash' };
 
 const app = {
   route: parseHash(),

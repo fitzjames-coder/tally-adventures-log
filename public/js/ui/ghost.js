@@ -93,7 +93,7 @@ export function legSchematic(legs, opts = {}) {
   return svg;
 }
 
-// A faint placeholder route for the empty book / empty paragraph.
+// A faint placeholder route for the empty journey / empty stage.
 export function ghostSchematic(onNavy = false) {
   const stroke = onNavy ? 'rgba(245,232,216,0.4)' : '#c9b595';
   const svg = svgEl('<svg viewBox="0 0 600 240" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>');

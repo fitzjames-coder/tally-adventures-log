@@ -3,8 +3,11 @@ import assert from 'node:assert/strict';
 
 import { MemoryStore } from '../src/lib/memstore.js';
 import * as c from '../src/api/controllers.js';
-import { CSV_TABLES } from '../src/lib/csv.js';
 import { makeZip } from '../src/lib/zip.js';
+
+// The CSV files are written out under their user-facing names. The underlying
+// tables stay chapters/paragraphs; only the exported file names differ.
+const EXPECTED_CSV_NAMES = ['destinations.csv', 'stages.csv', 'legs.csv', 'moments.csv', 'photos.csv', 'documents.csv'];
 
 function parseCsv(text) {
   // Simple splitter sufficient for the shapes we assert on.
@@ -28,7 +31,7 @@ async function seed(store) {
     file: { bytes: new Uint8Array([9, 9, 9]), type: 'application/pdf' },
     meta: { leg_id: flown.id, kind: 'ofp', filename: 'ofp.pdf' },
   });
-  return { planned, photo };
+  return { chapter: ch, paragraph: para, planned, photo };
 }
 
 test('CSV export covers every table, with keys and planned fields', async () => {
@@ -37,7 +40,7 @@ test('CSV export covers every table, with keys and planned fields', async () => 
 
   const files = await c.exportCsvFiles(store);
   const names = files.map((f) => f.name).sort();
-  assert.deepEqual(names, CSV_TABLES.map((t) => `${t}.csv`).sort());
+  assert.deepEqual(names, [...EXPECTED_CSV_NAMES].sort());
 
   const byName = Object.fromEntries(files.map((f) => [f.name, f.content]));
 
@@ -54,6 +57,37 @@ test('CSV export covers every table, with keys and planned fields', async () => 
     assert.ok(legsHead.includes(col), `legs.csv missing ${col}`);
   }
   assert.equal(parseCsv(byName['legs.csv']).rows.length, 2); // flown + planned
+});
+
+test('CSV export uses journey file names and renamed id headers', async () => {
+  const store = new MemoryStore();
+  const { chapter, paragraph } = await seed(store);
+
+  const files = await c.exportCsvFiles(store);
+  const byName = Object.fromEntries(files.map((f) => [f.name, f.content]));
+
+  // chapters -> destinations.csv, paragraphs -> stages.csv; legs.csv unchanged.
+  assert.ok(byName['destinations.csv'], 'destinations.csv present');
+  assert.ok(byName['stages.csv'], 'stages.csv present');
+  assert.ok(byName['legs.csv'], 'legs.csv present');
+  assert.ok(!byName['chapters.csv'], 'no chapters.csv');
+  assert.ok(!byName['paragraphs.csv'], 'no paragraphs.csv');
+
+  // stages.csv (paragraphs): chapter_id header becomes destination_id.
+  const stages = parseCsv(byName['stages.csv']);
+  assert.ok(stages.header.includes('destination_id'), 'stages.csv has destination_id header');
+  assert.ok(!stages.header.includes('chapter_id'), 'stages.csv has no chapter_id header');
+
+  // legs.csv: paragraph_id header becomes stage_id.
+  const legs = parseCsv(byName['legs.csv']);
+  assert.ok(legs.header.includes('stage_id'), 'legs.csv has stage_id header');
+  assert.ok(!legs.header.includes('paragraph_id'), 'legs.csv has no paragraph_id header');
+
+  // The rename is header-only: the data under it is unchanged.
+  const destIdx = stages.header.indexOf('destination_id');
+  assert.equal(stages.rows[0].split(',')[destIdx], chapter.id, 'destination_id column still holds the chapter id value');
+  const stageIdx = legs.header.indexOf('stage_id');
+  assert.equal(legs.rows[0].split(',')[stageIdx], paragraph.id, 'stage_id column still holds the paragraph id value');
 });
 
 test('CSV export includes trashed rows with deleted_at set', async () => {

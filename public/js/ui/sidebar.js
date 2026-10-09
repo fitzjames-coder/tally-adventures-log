@@ -1,5 +1,5 @@
 // The fixed navy sidebar (desktop) / slide-in drawer (phone): brand, primary
-// nav, and the book's chapters in flying order.
+// nav, and the journey's destinations in flying order.
 
 import { el } from '../dom.js';
 import { icon } from '../icons.js';
@@ -36,19 +36,19 @@ export function renderSidebar(app) {
   }
   inner.append(nav);
 
-  // Chapters in flying order
+  // Destinations in flying order
   const chapters = chaptersOrdered();
   const chapWrap = el('div', { class: 'chap-nav' });
   const head = el('div', { class: 'eyebrow', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
-    el('span', { text: 'The book · chapters' }));
-  const add = el('button', { class: 'icon-btn', type: 'button', 'aria-label': 'New chapter', style: { width: '28px', height: '28px' } });
+    el('span', { text: 'Destinations' }));
+  const add = el('button', { class: 'icon-btn', type: 'button', 'aria-label': 'New destination', style: { width: '28px', height: '28px' } });
   add.append(icon('plus'));
   add.addEventListener('click', () => openChapterForm({ nextOrder: chapters.length, onSaved: (ch) => { navigate(`/chapter/${ch.id}`); return app.refresh(); } }));
   head.append(add);
   chapWrap.append(head);
 
   if (!chapters.length) {
-    chapWrap.append(el('div', { class: 'muted', style: { padding: '8px 12px', fontSize: '12px' }, text: 'Add a chapter to begin the book.' }));
+    chapWrap.append(el('div', { class: 'muted', style: { padding: '8px 12px', fontSize: '12px' }, text: 'Add a destination to begin the journey.' }));
   } else {
     chapters.forEach((ch, i) => {
       const active = app.route.name === 'chapter' && app.route.param === ch.id;

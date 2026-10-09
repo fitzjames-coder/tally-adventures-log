@@ -288,13 +288,13 @@ export function openLegForm({ leg = null, section = 'summary', paragraphId, next
   });
 }
 
-// --- Chapter / Paragraph forms ---
+// --- Destination / Stage forms ---
 
 export function openChapterForm({ chapter = null, nextOrder = 0, onSaved } = {}) {
   const ch = chapter || {};
   openForm({
-    title: chapter ? 'Edit chapter' : 'New chapter',
-    submitLabel: chapter ? 'Save' : 'Add chapter',
+    title: chapter ? 'Edit destination' : 'New destination',
+    submitLabel: chapter ? 'Save' : 'Add destination',
     fields: [
       { kind: 'text', name: 'title', label: 'Title', required: true, full: true, value: ch.title },
       { kind: 'text', name: 'subtitle', label: 'Subtitle', full: true, value: ch.subtitle, placeholder: 'e.g. the places on either end' },
@@ -313,8 +313,8 @@ export function openChapterForm({ chapter = null, nextOrder = 0, onSaved } = {})
 export function openParagraphForm({ paragraph = null, chapterId, nextOrder = 0, onSaved } = {}) {
   const p = paragraph || {};
   openForm({
-    title: paragraph ? 'Edit paragraph' : 'New paragraph',
-    submitLabel: paragraph ? 'Save' : 'Add paragraph',
+    title: paragraph ? 'Edit stage' : 'New stage',
+    submitLabel: paragraph ? 'Save' : 'Add stage',
     fields: [
       { kind: 'text', name: 'title', label: 'Title', required: true, full: true, value: p.title },
       { kind: 'textarea', name: 'summary', label: 'Summary', full: true, value: p.summary },

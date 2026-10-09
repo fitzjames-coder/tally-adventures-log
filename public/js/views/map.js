@@ -1,5 +1,5 @@
 // Map: a schematic of the whole journey (no real map tiles in this milestone),
-// plus the chapters in flying order.
+// plus the destinations in flying order.
 
 import { el } from '../dom.js';
 import { icon } from '../icons.js';
@@ -39,7 +39,7 @@ export function renderMap() {
   wrap.append(el('div', { class: 'map-placeholder', style: { marginTop: '18px' } },
     icon('map', 'ic'),
     el('div', { style: { fontWeight: '700', color: 'var(--navy)' }, text: 'The interactive map arrives in a later milestone.' }),
-    el('div', { text: 'For now, the chapters below carry the places.' })));
+    el('div', { text: 'For now, the destinations below carry the places.' })));
 
   const list = el('div', { class: 'dest-list', style: { marginTop: '18px' } });
   chapters.forEach((ch, i) => {

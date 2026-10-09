@@ -1,4 +1,4 @@
-// Paragraph page: hero, leg tabs, four cards, route + timeline (Flown/Planned),
+// Stage page: hero, leg tabs, four cards, route + timeline (Flown/Planned),
 // planned flight plan, documents, flight moments, journal/quick/pilot notes.
 // Planned and flown are kept separate everywhere; ghost states fill the gaps.
 
@@ -17,7 +17,7 @@ import { openLegForm, openMomentForm } from '../ui/forms.js';
 import { openAddDocument } from '../ui/docs.js';
 import { openSimbriefImport } from '../ui/simbrief.js';
 import { pickAndUpload } from '../ui/photo.js';
-import { stepper, crumbs } from '../ui/stepper.js';
+import { crumbs } from '../ui/stepper.js';
 import { legSchematic, ghostTimeline, ghostBox, ghostPhaseBox } from '../ui/ghost.js';
 import { emptyState, editButton, primaryButton, ghostButton, sectionHead } from './common.js';
 import { confirmDialog, toast, openDialog } from '../ui/dialog.js';
@@ -35,7 +35,7 @@ function pad2(n) { return String(n).padStart(2, '0'); }
 
 export function renderParagraph(app) {
   const paragraph = getParagraph(app.route.param);
-  if (!paragraph) return emptyState({ mark: 'book', title: 'Paragraph not found', message: 'It may have been moved to Trash.' });
+  if (!paragraph) return emptyState({ mark: 'book', title: 'Stage not found', message: 'It may have been moved to Trash.' });
   const chapter = getChapter(paragraph.chapter_id);
   const chapterIdx = chapter ? chaptersOrdered().findIndex((c) => c.id === chapter.id) : -1;
   const paraIdx = chapter ? paragraphsForChapter(chapter.id).findIndex((p) => p.id === paragraph.id) : 0;
@@ -46,12 +46,10 @@ export function renderParagraph(app) {
 
   const wrap = el('div', {});
   wrap.append(crumbs([
-    { label: 'Book', to: '/book' },
-    chapter ? { label: `Chapter ${chapterIdx + 1} · ${chapter.title}`, to: `/chapter/${chapter.id}` } : null,
-    { label: `Paragraph ${paraIdx + 1} · ${paragraph.title}` },
-    leg ? { label: `Sentence · Leg ${leg.number ?? ''}`.trim() } : null,
+    chapter ? { label: chapter.title, to: `/chapter/${chapter.id}` } : null,
+    { label: paragraph.title },
+    leg ? { label: `Leg ${leg.number ?? ''}`.trim() } : null,
   ].filter(Boolean)));
-  wrap.append(stepper('sentence', { chapterId: chapter && chapter.id, paragraphId: paragraph.id }));
 
   wrap.append(hero(paragraph, chapter, chapterIdx, paraIdx, legs, leg));
   wrap.append(legTabs(app, paragraph, legs, leg));
@@ -59,7 +57,7 @@ export function renderParagraph(app) {
   if (!leg) {
     wrap.append(ghostBox({
       title: 'No legs yet',
-      text: 'Legs are the sentences of this paragraph. Add the first and the page below fills in — departure, route, documents and moments.',
+      text: 'Legs are the flights of this stage. Add the first and the page below fills in — departure, route, documents and moments.',
       visual: ghostTimeline(),
     }));
     return wrap;
@@ -105,7 +103,7 @@ function hero(paragraph, chapter, chapterIdx, paraIdx, legs, leg) {
   if (firstFlown && firstFlown.aircraft_type) chips.append(el('span', { class: 'chip', text: firstFlown.aircraft_type }));
 
   box.append(el('div', { class: 'phero-body' },
-    el('span', { class: 'eyebrow-pill', text: `Chapter ${pad2(chapterIdx + 1)} · ${chapter ? chapter.title : ''} / Paragraph ${pad2(paraIdx + 1)}` }),
+    el('span', { class: 'eyebrow-pill', text: `${chapter ? chapter.title + ' · ' : ''}Stage ${pad2(paraIdx + 1)}` }),
     el('h1', { text: paragraph.title }),
     sub ? el('div', { class: 'sub', text: sub }) : null,
     chips,
@@ -117,7 +115,7 @@ function hero(paragraph, chapter, chapterIdx, paraIdx, legs, leg) {
 
 function legTabs(app, paragraph, legs, selected) {
   const section = el('section', { class: 'section' });
-  section.append(sectionHead('Sentences · the legs in this paragraph', [
+  section.append(sectionHead('Legs in this stage', [
     el('span', { class: 'hint muted', text: 'Tap a leg. Everything below switches to it.' }),
     primaryButton(' Add leg', 'plus', () => openLegForm({ section: 'new', paragraphId: paragraph.id, nextNumber: legs.length + 1, onSaved: (l) => { navigate(`/paragraph/${paragraph.id}/leg/${l.id}`); return app.refresh(); } })),
   ]));

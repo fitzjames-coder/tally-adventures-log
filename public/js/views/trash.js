@@ -8,8 +8,8 @@ import { confirmDialog, toast } from '../ui/dialog.js';
 import { pageHead, emptyState, ghostButton } from './common.js';
 
 const TYPE_LABEL = {
-  chapters: 'Chapter',
-  paragraphs: 'Paragraph',
+  chapters: 'Destination',
+  paragraphs: 'Stage',
   legs: 'Flight',
   moments: 'Moment',
   photos: 'Photo',
