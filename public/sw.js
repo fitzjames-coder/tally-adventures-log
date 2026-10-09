@@ -1,10 +1,14 @@
 // Service worker.
-//  - App shell: precache the essentials, cache the rest of the shell at runtime.
+//  - App shell (HTML, JS, CSS, manifest, brand images): NETWORK-FIRST. Each
+//    load fetches the freshest file and refreshes the cached copy; the cache is
+//    only used as an offline fallback. This means every deploy shows up on the
+//    next load instead of serving stale JS/CSS forever.
+//  - Fonts: cache-first (they never change).
 //  - /api: network only; API responses are never cached as permanent truth.
 //  - /media: cache-first, but a photo is only added to the cache after it has
 //    actually been fetched (i.e. viewed). Nothing is pre-downloaded.
 
-const SHELL = 'tally-shell-v2';
+const SHELL = 'tally-shell-v3';
 const MEDIA = 'tally-media-v1';
 
 const SHELL_ASSETS = [
@@ -53,10 +57,12 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(networkOnly(request));
   } else if (url.pathname.startsWith('/media/')) {
     event.respondWith(cacheFirstMedia(request));
+  } else if (url.pathname.startsWith('/fonts/')) {
+    event.respondWith(cacheFirstShell(request)); // fonts never change
   } else if (request.mode === 'navigate') {
     event.respondWith(navigateShell(request));
   } else {
-    event.respondWith(shellAsset(request));
+    event.respondWith(networkFirstShell(request)); // JS/CSS/manifest/brand images
   }
 });
 
@@ -93,13 +99,28 @@ async function navigateShell(request) {
   }
 }
 
-async function shellAsset(request) {
+// Network-first: fetch the freshest copy, refresh the cache, and fall back to
+// the cache only when offline. This is what makes new deploys appear at once.
+async function networkFirstShell(request) {
+  const cache = await caches.open(SHELL);
+  try {
+    const res = await fetch(request);
+    if (res && res.ok) cache.put(request, res.clone());
+    return res;
+  } catch {
+    const hit = await cache.match(request);
+    return hit || Response.error();
+  }
+}
+
+// Cache-first: for fonts, which never change. Fetched and cached on first use.
+async function cacheFirstShell(request) {
   const cache = await caches.open(SHELL);
   const hit = await cache.match(request);
   if (hit) return hit;
   try {
     const res = await fetch(request);
-    if (res.ok) cache.put(request, res.clone());
+    if (res && res.ok) cache.put(request, res.clone());
     return res;
   } catch {
     return hit || Response.error();
